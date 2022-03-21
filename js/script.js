@@ -51,7 +51,6 @@ let books = [
     provider: "Tuổi trẻ",
   },
 ];
-let item = document.getElementsByClassName('item');
 
 //Hàm đổi màu
 function changeColor() {
@@ -74,126 +73,194 @@ function changeColor() {
   }
 }
 
-//Hàm sửa lại text mặc định
-function addBooks(book) {
-  let arrName = [];
-  let arrPrice = [];
-  let arrProvider = [];
-  for (let i = 0; i < book.length; i++) {
-    arrName.push(book[i].name);
-    arrPrice.push(book[i].price);
-    arrProvider.push(book[i].provider);
+
+function renderBooks(books) {                               // In ra sách
+  let list = document.getElementById("list");
+  list.innerHTML = '';
+
+  for (let i = 0; i < books.length; i++) {
+    let div = document.createElement("div");
+    div.className = "item";
+    list.appendChild(div);
+
+    let img = document.createElement("img");
+    img.src = `./images/0${books[i].id}.jpg`
+    div.appendChild(img)
+
+    let h2 = document.createElement("h2");
+    h2.innerHTML = books[i].name;
+    div.appendChild(h2);
+
+    let p = document.createElement("p");
+    p.innerHTML = `${books[i].price}`;
+    div.appendChild(p);
   }
-  for (let i = 0; i < item.length; i++) {
-    let oldValue = item[i].children[1];   // Lấy node mặc định
-    let newEle = document.createElement('h2');
-    newEle.innerText = `${book[i].name}`;
-    oldValue.parentNode.replaceChild(newEle, oldValue);  // Replace text 
-
-    let oldPrice = item[i].children[2];
-    let newPrice = document.createElement('p');
-    newPrice.innerText = `${book[i].price}`;
-    oldPrice.parentNode.replaceChild(newPrice, oldPrice);
-  }
-
-
 }
 
-function searchBooks() {
-  let arrSort = [];
-  let objBooks;
-  let buttonPrice = document.getElementById('apply-price-filter');
 
 
-  buttonPrice.addEventListener("click", function () {
-    for (let i = 0; i < books.length; i++) {
-      let inputValue = document.getElementById('search').value;
-      if (books[i].name.indexOf(inputValue) !== -1) {
-        objBooks = books[i];
-        arrSort.push(objBooks);
-      }
-
-    }
-    for (let j = 0; j < item.length; j++) {
-      arrSort.forEach(function (element) {
-        if (item[j].children[1].innerText !== element.name) {
-          item[j].style.display = "none";
-        } else {
-          item[j].style.display = "block";
-        }
-      })
-    }
-  })
-}
-
-//Lọc theo giá và tên sách 
-function sortbooks() {
-  let btn = document.getElementById('sort-by');
-  let newArrObj = [];
-  
-  newArrObj = sortNameBooks(books);
-  let arrTmp = [];
-  // let arrPricesTmp = [];
-  // let newArrObjPrices =[]; 
-  // newArrObjPrices = sortPricesBooks(newArrObj);
-  // console.log(newArrObjPrices)
-
-  for (let i = 0; i < newArrObj.length; i++) {
-    for (let j = 0; j < item.length; j++) {
-      if (item[j].children[1].innerText === newArrObj[i].name) {
-        arrTmp.push(item[j]);
-        break;
-      } 
+function searchBooksPriceKeyword(min, max, keyword) {
+  let result = [];
+  keyword = keyword.toUpperCase();
+  for (let i = 0; i < books.length; i++) {
+    let price = books[i].price;
+    if (books[i].name.toUpperCase().indexOf(keyword) != -1 && price >= min && price <= max) {
+      result.push(books[i]);
     }
   }
+  return result;
+}
+
+function searchBooks(keyword) {                               //Search khi nhập vào ô input  
+  let result = [];
+  keyword = keyword.toUpperCase();
+  for (let i = 0; i < books.length; i++) {
+    if (books[i].name.toUpperCase().indexOf(keyword) != -1) {
+      result.push(books[i]);
+    }
+  }
+  return result;
+}
 
 
-  // Xử lí sự kiện click
-  btn.addEventListener("change", function () {
-    if (btn.value == "sort by name") {
-      for (let i = 0; i < item.length; i++) {
-        item[i].outerHTML = arrTmp[i].outerHTML;
-      }
+function filterBooks() {
+  let search = document.getElementById('search');
+  search.oninput = function () {
+    let keyword = document.getElementById('search').value;
+    let result = searchBooks(keyword);
+    renderBooks(result);
+  }
+}
+
+function filterBooksByPrices() {                                      //Search khi click button 
+  let searchByPrices = document.getElementById('apply-price-filter');
+  searchByPrices.onclick = function () {
+    let min = document.getElementById("min-price").value;
+    let max = document.getElementById("max-price").value;
+    let key = document.getElementById('search').value;
+
+    document.getElementById('search').value = "";
+    document.getElementById("min-price").value = "";
+    document.getElementById("max-price").value = "";
+
+    let result = searchBooksPriceKeyword(min,max,key);
+    renderBooks(result);
+  }
+}
+
+
+function searchByProvider(provider) {
+  let result= [] ;
+  for(let i = 0 ; i< books.length ; i ++) {
+    if(books[i].provider === provider) {
+      result.push(books[i]);
+    }
+  }
+  return result;
+}
+function searchAllProvider () {
+  let resultFinal = [] ;
+
+
+  let checkBox1 = document.getElementById("provider-1");
+  let searchByProvider1 = [] ;
+
+  if(checkBox1.checked === true) {
+    let labelText = document.getElementById("provider-1").labels[0].textContent;
+    searchByProvider1 = searchByProvider(labelText);
+    for(let i = 0 ; i < searchByProvider1.length;i++) {
+      resultFinal.push(searchByProvider1[i]);
     } 
+  }
 
-  })
+  let checkBox2 = document.getElementById("provider-2");
+  let searchByProvider2 = [] ;
+
+  if(checkBox2.checked === true) {
+    let labelText = document.getElementById("provider-2").labels[0].textContent;
+    searchByProvider2 = searchByProvider(labelText);
+    for(let i = 0 ; i < searchByProvider2.length;i++) {
+      resultFinal.push(searchByProvider2[i]);
+    } 
+  }
+
+
+  let checkBox3 = document.getElementById("provider-3");
+  let searchByProvider3 = [] ;
+
+  if(checkBox3.checked === true) {
+    let labelText = document.getElementById("provider-3").labels[0].textContent;
+    searchByProvider3 = searchByProvider(labelText);
+    for(let i = 0 ; i < searchByProvider3.length;i++) {
+      resultFinal.push(searchByProvider3[i]);
+    } 
+  }
+
+  renderBooks(resultFinal);
 }
 
-
-function sortNameBooks(objBooks) {
-  for (let i = 0; i < objBooks.length - 1; i++) {
-    for (let j = i + 1; j < objBooks.length; j++) {
-      if (objBooks[i].name > objBooks[j].name) {
-        let tam = objBooks[i];
-        objBooks[i] = objBooks[j];
-        objBooks[j] = tam;
+function sortNameBooks(books) {
+  let result = [];
+  for (let i = 0; i < books.length - 1; i++) {
+    for (let j = i + 1; j < books.length; j++) {
+      if (books[i].name > books[j].name) {
+        let tam = books[i];
+        books[i] = books[j];
+        books[j] = tam;
       }
     }
   }
-  return objBooks;
+  result = books;
+  
+  return result;
 }
-function sortPricesBooks(bookPrices) {
-  for (let i = 0; i < bookPrices.length - 1; i++) {
-    for (let j = i + 1; j < bookPrices.length; j++) {
-      if (bookPrices[i].price > bookPrices[j].price) {
-        let tam = bookPrices[i];
-        bookPrices[i] = bookPrices[j];
-        bookPrices[j] = tam;
+function sortPricesBooks(books) {
+  let result = [];
+  for (let i = 0; i < books.length - 1; i++) {
+    for (let j = i + 1; j < books.length; j++) {
+      if (books[i].price > books[j].price) {
+        let tam = books[i];
+        books[i] = books[j];
+        books[j] = tam;
       }
     }
   }
-  return bookPrices;
+  result = books;
+  
+  return result;
 }
 
+function sortBooks () {                         // Event sort
+  let sortBtn = document.getElementById('sort-by');
+  sortBtn.addEventListener('change',function(event) {
+    if(event.currentTarget.value === 'sort by name') {
+      let sortArr = sortNameBooks(books);
+      renderBooks(sortArr);
+    }else {
+      let sortPricesArr = sortPricesBooks(books);
+      renderBooks(sortPricesArr)
+    }
+  });
+}
 
-
-//
-
+let provider1 = document.getElementById("provider-1");
+  provider1.onchange = function() {
+    searchAllProvider();
+  };
+let provider2 = document.getElementById("provider-2");
+provider2.onchange = function() {
+  searchAllProvider();
+};
+let provider3 = document.getElementById("provider-3");
+provider3.onchange = function() {
+  searchAllProvider();
+};
 
 
 
 //Lời gọi hàm-----------------------------------------------------------
 changeColor();
-addBooks(books);
-searchBooks();
-sortbooks();
+renderBooks(books);
+filterBooks();
+filterBooksByPrices();
+sortBooks();
